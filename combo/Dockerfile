@@ -2,17 +2,15 @@ FROM debian:jessie
 
 MAINTAINER peondusud
 
-LABEL Description="rtorrent docker image based on debian jessie"
+LABEL Description="rtorrent+nginx+php5-fmp docker image based on debian jessie"
 LABEL Version="LITE"
-
-ENV rtorrent_user torrentz
 
 # based on latest debian:jessie
 ARG installed_deps="libc6 libstdc++6 libtinfo5 libgcc1 libncursesw5"
-ARG lib_deps="curl libcurl3 screen libsigc++-2.0-0c2a"
+ARG lib_deps="curl libcurl3 libsigc++-2.0-0c2a"
 ARG build_deps="ca-certificates automake build-essential libtool pkg-config subversion libxml2-dev libssl-dev libcurl4-openssl-dev libxml2-dev libcppunit-dev libsigc++-2.0-dev libncurses5-dev"
-ARG nginx_deps="ca-certificates apache2-utils nginx nginx-module-geoip nginx-module-image-filter nginx-module-perl nginx-module-njs nginx-module-xslt gettext-base php5 php5-cli php5-fpm php5-curl php5-geoip"
-ARG rutorrent_deps="subversion git curl git unzip unrar rar zip bzip2 buildtorrent mediainfo ffmpeg"
+ARG nginx_deps="ca-certificates apache2-utils nginx nginx-module-geoip nginx-module-image-filter nginx-module-perl gettext-base php5 php5-cli php5-fpm php5-curl php5-geoip"
+ARG rutorrent_deps="curl unzip unrar rar zip bzip2 buildtorrent mediainfo ffmpeg"
 
 
 
@@ -52,9 +50,9 @@ RUN set -x  && \
     apt-get purge -y --auto-remove ${build_deps} && \
     apt-get autoremove -y && \
     #apt-get autoremove --purge -y && \
-    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/lib/apt/* /var/lib/dpkg/* /var/lib/cache/* /var/lib/log/* \
+    rm -rf /usr/share/man/ /usr/share/doc/ && \
     set +x
-
 
 
 # forward request and error logs to docker log collector
@@ -70,20 +68,16 @@ RUN curl -Lk -o rutorrent-master.zip https://github.com/Novik/ruTorrent/archive/
     chown -R www-data:www-data /var/www/rutorrent
 
 
-COPY rutorrent.conf /etc/nginx/conf.d/rutorrent.conf
-COPY nginx.conf /etc/nginx/nginx.conf
-COPY conf.sh /root/conf.sh
-
-RUN useradd -ms /bin/bash ${rtorrent_user}
-USER ${rtorrent_user}
-WORKDIR /home/${rtorrent_user}
-
-RUN curl -k https://raw.githubusercontent.com/wiki/rakshasa/rtorrent/CONFIG-Template.md | grep -A9999 '^######' | grep -B9999 '^### END' | sed -e "s/USERNAME/${rtorrent_user}/g" | sed '1s/^/scgi_port = :5000\n/' > ~/.rtorrent.rc
-RUN bash -c 'mkdir -p "$HOME/rtorrent"/{.session,download,log,watch/load,watch/start}'
-
-
-CMD ["rtorrent"]
+RUN curl -k https://raw.githubusercontent.com/wiki/rakshasa/rtorrent/CONFIG-Template.md | grep -A9999 '^######' | grep -B9999 '^### END' > /root/.rtorrent.rc
 
 # rtorrent ports
 EXPOSE 50000-50000
 EXPOSE 80
+
+COPY rutorrent.conf /etc/nginx/conf.d/rutorrent.conf
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY conf.sh /root/conf.sh
+
+RUN chmod +x /root/conf.sh
+#VOLUME
+CMD ["/root/conf.sh"]
