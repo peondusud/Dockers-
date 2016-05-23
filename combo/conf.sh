@@ -3,15 +3,26 @@
 rtorrent_user="torrentz"
 
 useradd -ms /bin/bash ${rtorrent_user}
-mkdir -p "/home/${rtorrent_user}/rtorrent"/{.session,download,log,watch/load,watch/start}
+mkdir -p "/home/${rtorrent_user}/rtorrent"/{.session,download,complete,log,watch/load,watch/start}
 
 sed -i "s/USERNAME/${rtorrent_user}/g" /root/.rtorrent.rc
 sed -i '9s/^/scgi_port = 127.0.0.1:5000\n/' /root/.rtorrent.rc
-mv /root/.rtorrent.rc /home/${rtorrent_user}/
+
+# test if file already exist, elseif keep the mounted one
+if [ ! -f /home/${rtorrent_user}/.rtorrent.rc ]; then
+    mv /root/.rtorrent.rc /home/${rtorrent_user}/
+fi
 chown -R ${rtorrent_user}:${rtorrent_user} /home/${rtorrent_user}/{*,.*}
 
 
 rm /etc/nginx/conf.d/default.conf
+
+
+tmpz=$(which php); sed -i "s|\(\"php\".*\)'',|\1'$tmpz',|" /var/www/rutorrent/conf/config.php
+tmpz=$(which curl); sed -i "s|\(\"curl\".*\)'',|\1'$tmpz',|" /var/www/rutorrent/conf/config.php
+tmpz=$(which gzip); sed -i "s|\(\"gzip\".*\)'',|\1'$tmpz',|" /var/www/rutorrent/conf/config.php
+tmpz=$(which id); sed -i "s|\(\"id\".*\)'',|\1'$tmpz',|" /var/www/rutorrent/conf/config.php
+tmpz=$(which stat); sed -i "s|\(\"stat\".*\)'',|\1'$tmpz',|" /var/www/rutorrent/conf/config.php
 
 #sed -i "s/\(\$scgi_host =\).*;$/\1 \"${rtorrent_scgi_host}\";/" /var/www/rutorrent/conf/config.php
 #sed -i "s/\(\$scgi_port =\).*;$/\1 ${rtorrent_scgi_port};/" /var/www/rutorrent/conf/config.php
