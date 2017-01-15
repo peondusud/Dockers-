@@ -7,7 +7,7 @@ LABEL Description="rtorrent+nginx+php5-fmp docker image based on debian jessie"
 # based on latest debian:jessie
 ARG installed_deps="libc6 libstdc++6 libtinfo5 libgcc1 libncursesw5"
 ARG lib_deps="curl libcurl3 libsigc++-2.0-0c2a"
-ARG build_deps="ca-certificates automake build-essential libtool pkg-config subversion libxml2-dev libssl-dev libcurl4-openssl-dev libxml2-dev libcppunit-dev libsigc++-2.0-dev libncurses5-dev"
+ARG build_deps="git automake build-essential libtool pkg-config subversion libxml2-dev libssl-dev libcurl4-openssl-dev libxml2-dev libcppunit-dev libsigc++-2.0-dev libncurses5-dev"
 ARG nginx_deps="ca-certificates apache2-utils nginx gettext-base php5 php5-cli php5-fpm php5-curl php5-geoip"
 ARG rutorrent_deps="curl unzip unrar rar zip bzip2 buildtorrent mediainfo ffmpeg"
 
@@ -29,18 +29,18 @@ RUN set -x  && \
     make install && \
     cd .. && rm -rf xmlrpc-c && \
     ldconfig && \
-    curl -Lk -o libtorrent-master.zip https://github.com/rakshasa/libtorrent/archive/master.zip && \
-    unzip libtorrent-master.zip && \
-    cd libtorrent-master && \
+    git clone https://github.com/rakshasa/libtorrent.git && \
+    cd libtorrent && \
+    git checkout 0.13.6 && \
     ./autogen.sh && \
     ./configure --with-posix-fallocate && \
     make -j$(nproc) && \
     make install && \
     cd .. && rm -rf libtorrent-* && \
     ldconfig && \
-    curl -Lk -o rtorrent-master.zip https://github.com/rakshasa/rtorrent/archive/master.zip && \
-    unzip rtorrent-master.zip && \
-    cd rtorrent-master && \
+    git clone https://github.com/rakshasa/rtorrent.git && \
+    cd rtorrent && \
+    git checkout 0.9.6 && \
     ./autogen.sh && \
     ./configure --with-xmlrpc-c --with-ncurses && \
     make -j$(nproc) && \
@@ -77,7 +77,7 @@ RUN cd /tmp && \
     chown -R www-data:www-data /var/www/rutorrent 
 
 # rtorrent ports
-EXPOSE 50000-50000
+EXPOSE 50000-65000
 EXPOSE 80
 
 

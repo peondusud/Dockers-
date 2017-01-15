@@ -28,14 +28,15 @@ sed -i "s|\(pathToExternals\['zip'\] = '\)';|\1$(which zip)';|"  /var/www/rutorr
 sed -i "s|\(pathToExternals\['unzip'\] = '\)';|\1$(which unzip)';|"  /var/www/rutorrent/plugins/filemanager/conf.php
 sed -i "s|\(pathToExternals\['tar'\] = '\)';|\1$(which tar)';|"  /var/www/rutorrent/plugins/filemanager/conf.php
 
-echo -e "\n[ipad]
+echo "
+[ipad]
 enabled = no
 [httprpc]
-enabled = no
+enabled = yes
 [retrackers]
 enabled = no
 [rpc]
-enabled = no
+enabled = yes
 [rutracker_check]
 enabled = no" >>  /var/www/rutorrent/conf/plugins.ini
 
